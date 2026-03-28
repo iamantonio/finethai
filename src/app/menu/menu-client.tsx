@@ -101,7 +101,7 @@ export function MenuPageClient() {
   }, [filteredCategories, isScrolling]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-12">
       {/* Header */}
       <div className="mb-10">
         <p className="text-primary font-medium text-sm tracking-wider uppercase mb-3">
