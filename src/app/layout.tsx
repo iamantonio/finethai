@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
+import { CartProvider } from "@/context/cart-context";
+import { CartSheet } from "@/components/cart-sheet";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -53,9 +57,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navigation />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navigation />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartSheet />
+        </CartProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

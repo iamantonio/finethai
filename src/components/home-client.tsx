@@ -5,8 +5,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { restaurantInfo, menuCategories } from "@/data/menu";
+import { images } from "@/data/images";
 import { FadeIn, StaggerChildren, StaggerItem, FloatingCTA } from "@/components/animations";
 import { ThaiOrnament } from "@/components/thai-ornament";
+import type { PlaceReview } from "@/lib/google-places";
 
 interface FeaturedDish {
   name: string;
@@ -14,13 +16,7 @@ interface FeaturedDish {
   price: string;
   tag: string;
   image: string;
-}
-
-interface Review {
-  name: string;
-  rating: number;
-  text: string;
-  date: string;
+  menuItemId: string;
 }
 
 function Stars({ count }: { count: number }) {
@@ -29,7 +25,7 @@ function Stars({ count }: { count: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          className={`w-4 h-4 ${i < count ? "text-primary fill-primary" : "text-border"}`}
+          className={`w-4 h-4 ${i < Math.round(count) ? "text-primary fill-primary" : "text-border"}`}
           viewBox="0 0 20 20"
           fill="currentColor"
         >
@@ -43,20 +39,23 @@ function Stars({ count }: { count: number }) {
 export function HomeClient({
   featuredDishes,
   reviews,
+  rating,
+  reviewCount,
   totalItems,
 }: {
   featuredDishes: FeaturedDish[];
-  reviews: Review[];
+  reviews: PlaceReview[] | null;
+  rating: number | null;
+  reviewCount: number | null;
   totalItems: number;
 }) {
   return (
     <>
       {/* Hero Section — Full bleed with image */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Background image */}
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=1920&h=1080&fit=crop"
+            src={images.hero}
             alt="Thai cuisine"
             fill
             className="object-cover"
@@ -92,7 +91,7 @@ export function HomeClient({
               <Button
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base px-8 h-13 rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-300"
-                render={<a href={restaurantInfo.orderOnlineUrl} target="_blank" rel="noopener noreferrer" />}
+                render={<Link href="/menu" />}
               >
                 <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -110,17 +109,21 @@ export function HomeClient({
             </div>
           </FadeIn>
 
-          {/* Trust signals */}
+          {/* Trust signals — only show real data */}
           <FadeIn delay={1.0}>
             <div className="flex items-center gap-6 mt-14 text-sm text-foreground/60">
-              <div className="flex items-center gap-2">
-                <Stars count={5} />
-                <span>4.7 Rating</span>
-              </div>
-              <span className="text-border">|</span>
+              {rating !== null && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Stars count={rating} />
+                    <span>{rating} Rating</span>
+                  </div>
+                  <span className="text-border">|</span>
+                </>
+              )}
               <span>{totalItems}+ Menu Items</span>
-              <span className="text-border hidden sm:inline">|</span>
-              <span className="hidden sm:inline">Pickup & Delivery</span>
+              <span className="text-border">|</span>
+              <span>Pickup & Delivery</span>
             </div>
           </FadeIn>
         </div>
@@ -152,7 +155,7 @@ export function HomeClient({
         </div>
       </section>
 
-      {/* Featured Dishes — Image-driven cards */}
+      {/* Featured Dishes */}
       <section className="py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn>
@@ -248,12 +251,7 @@ export function HomeClient({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div className="rounded-2xl overflow-hidden aspect-[3/4] relative">
-                    <Image
-                      src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=533&fit=crop"
-                      alt="Thai curry dish"
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={images.aboutCurry} alt="Thai curry dish" fill className="object-cover" />
                   </div>
                   <div className="rounded-2xl bg-primary/10 p-6 border border-primary/20">
                     <p className="text-primary font-bold text-lg">Fresh Daily</p>
@@ -266,12 +264,7 @@ export function HomeClient({
                     <p className="text-sm text-muted-foreground mt-1">Every dish wok-fired fresh when you order</p>
                   </div>
                   <div className="rounded-2xl overflow-hidden aspect-[3/4] relative">
-                    <Image
-                      src="https://images.unsplash.com/photo-1559314809-0d155014e29e?w=400&h=533&fit=crop"
-                      alt="Pad Thai"
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={images.aboutPadThai} alt="Pad Thai" fill className="object-cover" />
                   </div>
                 </div>
               </div>
@@ -280,15 +273,13 @@ export function HomeClient({
         </div>
       </section>
 
-      {/* Menu Categories — Visual browse */}
+      {/* Menu Categories */}
       <section className="py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn>
             <div className="text-center mb-16">
               <p className="text-primary font-medium text-sm tracking-[0.2em] uppercase mb-3">Explore</p>
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
-                Browse by Category
-              </h2>
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Browse by Category</h2>
               <ThaiOrnament className="mt-6 max-w-xs mx-auto" />
             </div>
           </FadeIn>
@@ -301,15 +292,7 @@ export function HomeClient({
                   className="group block p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 text-center"
                 >
                   <div className="text-3xl mb-3">
-                    {cat.id === "appetizers" ? "🥟" :
-                     cat.id === "soups" ? "🍲" :
-                     cat.id === "noodles" ? "🍜" :
-                     cat.id === "curry" ? "🍛" :
-                     cat.id === "fried-rice" ? "🍚" :
-                     cat.id === "seafood" ? "🦐" :
-                     cat.id === "specials" ? "⭐" :
-                     cat.id === "vegetarian" ? "🌿" :
-                     "🍽️"}
+                    {cat.id === "appetizers" ? "🥟" : cat.id === "soups" ? "🍲" : cat.id === "noodles" ? "🍜" : cat.id === "curry" ? "🍛" : cat.id === "fried-rice" ? "🍚" : cat.id === "seafood" ? "🦐" : cat.id === "specials" ? "⭐" : cat.id === "vegetarian" ? "🌿" : "🍽️"}
                   </div>
                   <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{cat.name}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{cat.items.length} items</p>
@@ -326,7 +309,7 @@ export function HomeClient({
         </div>
       </section>
 
-      {/* Reviews / Social Proof */}
+      {/* Reviews / Social Proof — real data or fallback */}
       <section className="py-24 bg-card">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn>
@@ -335,47 +318,63 @@ export function HomeClient({
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
                 Loved by Our Community
               </h2>
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <Stars count={5} />
-                <span className="text-foreground/70">4.7 out of 5</span>
-              </div>
+              {rating !== null && (
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <Stars count={rating} />
+                  <span className="text-foreground/70">{rating} out of 5{reviewCount ? ` (${reviewCount} reviews)` : ""}</span>
+                </div>
+              )}
               <ThaiOrnament className="mt-6 max-w-xs mx-auto" />
             </div>
           </FadeIn>
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.map((review) => (
-              <StaggerItem key={review.name}>
-                <div className="bg-background border border-border rounded-2xl p-6 hover:border-primary/20 transition-colors h-full flex flex-col">
-                  <Stars count={review.rating} />
-                  <p className="text-foreground/80 leading-relaxed mt-4 flex-1 italic">
-                    &ldquo;{review.text}&rdquo;
-                  </p>
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                        {review.name.charAt(0)}
+          {reviews && reviews.length > 0 ? (
+            <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {reviews.slice(0, 3).map((review) => (
+                <StaggerItem key={review.author}>
+                  <div className="bg-background border border-border rounded-2xl p-6 hover:border-primary/20 transition-colors h-full flex flex-col">
+                    <Stars count={review.rating} />
+                    <p className="text-foreground/80 leading-relaxed mt-4 flex-1 italic">
+                      &ldquo;{review.text.length > 200 ? review.text.slice(0, 200) + "..." : review.text}&rdquo;
+                    </p>
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                          {review.author.charAt(0)}
+                        </div>
+                        <span className="font-medium text-sm">{review.author}</span>
                       </div>
-                      <span className="font-medium text-sm">{review.name}</span>
+                      <span className="text-xs text-muted-foreground">{review.relativeTime}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{review.date}</span>
                   </div>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
+                </StaggerItem>
+              ))}
+            </StaggerChildren>
+          ) : (
+            <FadeIn>
+              <div className="text-center py-12 bg-background border border-border rounded-2xl max-w-lg mx-auto">
+                <div className="text-4xl mb-4">⭐</div>
+                <h3 className="text-xl font-semibold mb-2">See What Our Customers Say</h3>
+                <p className="text-muted-foreground mb-6 px-6">
+                  Read reviews from our community on Google to see why they love Fine Thai.
+                </p>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  render={<a href={restaurantInfo.googleMapsUrl} target="_blank" rel="noopener noreferrer" />}
+                >
+                  Read Reviews on Google &rarr;
+                </Button>
+              </div>
+            </FadeIn>
+          )}
         </div>
       </section>
 
       {/* Coupon / Promo Banner */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=1920&h=600&fit=crop"
-            alt="Thai food spread"
-            fill
-            className="object-cover"
-          />
+          <Image src={images.promoBanner} alt="Thai food spread" fill className="object-cover" />
           <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
         </div>
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 text-center">
@@ -392,7 +391,7 @@ export function HomeClient({
             <Button
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-full px-10 h-13 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all duration-300"
-              render={<a href={restaurantInfo.orderOnlineUrl} target="_blank" rel="noopener noreferrer" />}
+              render={<Link href="/menu" />}
             >
               Start Your Order
             </Button>
@@ -406,9 +405,7 @@ export function HomeClient({
           <FadeIn>
             <div className="text-center mb-16">
               <p className="text-primary font-medium text-sm tracking-[0.2em] uppercase mb-3">Visit Us</p>
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
-                Location & Hours
-              </h2>
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Location & Hours</h2>
               <ThaiOrnament className="mt-6 max-w-xs mx-auto" />
             </div>
           </FadeIn>
@@ -466,7 +463,7 @@ export function HomeClient({
                 <div className="flex gap-3">
                   <Button
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-full"
-                    render={<a href={restaurantInfo.orderOnlineUrl} target="_blank" rel="noopener noreferrer" />}
+                    render={<Link href="/menu" />}
                   >
                     Order Online
                   </Button>

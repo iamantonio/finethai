@@ -9,6 +9,7 @@ import {
   type SpiceLevel,
   type DietaryTag,
 } from "@/data/menu";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 const spiceConfig: Record<SpiceLevel, { label: string; dots: number; color: string }> = {
   none: { label: "No spice", dots: 0, color: "" },
@@ -285,9 +286,12 @@ export function MenuPageClient() {
                           </div>
                         )}
                       </div>
-                      <p className="text-primary font-bold text-lg shrink-0">
-                        ${item.price.toFixed(2)}
-                      </p>
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <p className="text-primary font-bold text-lg">
+                          ${item.price.toFixed(2)}
+                        </p>
+                        <AddToCartButton item={item} compact />
+                      </div>
                     </div>
                   </div>
                 ))}

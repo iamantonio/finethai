@@ -113,9 +113,7 @@ export function FloatingCTA() {
       className="fixed bottom-6 right-6 z-50 hidden md:block"
     >
       <a
-        href="https://www.brookfieldfinethai.com/2q9v8mch/fine-thai-brookfield-60513/order-online"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="/menu"
         className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-105 transition-all duration-300"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

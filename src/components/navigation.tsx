@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { restaurantInfo } from "@/data/menu";
+import { useCart } from "@/context/cart-context";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -18,6 +19,7 @@ export function Navigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { itemCount, setIsOpen: setCartOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -61,13 +63,19 @@ export function Navigation() {
             <a href={restaurantInfo.phoneHref} className="text-sm text-foreground/70 hover:text-primary transition-colors hidden lg:block">
               {restaurantInfo.phone}
             </a>
-            <Button
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-full px-6"
-              render={<a href={restaurantInfo.orderOnlineUrl} target="_blank" rel="noopener noreferrer" />}
+            <button
+              onClick={() => itemCount > 0 ? setCartOpen(true) : undefined}
+              className="relative"
             >
-              Order Online
-            </Button>
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-full px-6"
+                render={itemCount > 0 ? <span /> : <Link href="/menu" />}
+                onClick={itemCount > 0 ? () => setCartOpen(true) : undefined}
+              >
+                {itemCount > 0 ? `Cart (${itemCount})` : "Order Online"}
+              </Button>
+            </button>
           </div>
 
           {/* Mobile hamburger */}
@@ -127,19 +135,33 @@ export function Navigation() {
             </svg>
             <span className="text-[10px] font-medium">Menu</span>
           </Link>
-          <a
-            href={restaurantInfo.orderOnlineUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => itemCount > 0 ? setCartOpen(true) : undefined}
             className="flex flex-col items-center justify-center gap-1 text-primary font-semibold"
           >
-            <div className="w-10 h-10 -mt-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-              </svg>
-            </div>
-            <span className="text-[10px]">Order</span>
-          </a>
+            {itemCount > 0 ? (
+              <Link href="#" onClick={(e) => { e.preventDefault(); setCartOpen(true); }} className="flex flex-col items-center">
+                <div className="relative w-10 h-10 -mt-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                  </svg>
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                </div>
+                <span className="text-[10px]">Cart</span>
+              </Link>
+            ) : (
+              <Link href="/menu" className="flex flex-col items-center">
+                <div className="w-10 h-10 -mt-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                  </svg>
+                </div>
+                <span className="text-[10px]">Order</span>
+              </Link>
+            )}
+          </button>
           <a
             href={restaurantInfo.phoneHref}
             className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
